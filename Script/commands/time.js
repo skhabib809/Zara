@@ -1,76 +1,129 @@
-const axios = require("axios");
-const request = require("request");
-const fs = require("fs-extra");
 const moment = require("moment-timezone");
+const fs = require("fs-extra");
+const { createCanvas } = require("canvas");
 
 module.exports.config = {
  name: "time",
- version: "1.0.1",
+ version: "4.0",
  hasPermssion: 0,
- credits: "Joshua Sy", //don't change the credits please
- description: "Displays current time and bot runtime.",
+ credits: "Rahat Bot",
+ description: "Beautiful neon-style date/time generator",
  commandCategory: "Info",
- cooldowns: 1,
- dependencies: {
- "request": "",
- "fs-extra": "",
- "axios": ""
- }
+ cooldowns: 1
 };
 
-module.exports.run = async function({ api, event }) {
- const uptime = process.uptime(),
- hours = Math.floor(uptime / 3600),
- minutes = Math.floor((uptime % 3600) / 60),
- seconds = Math.floor(uptime % 60);
+module.exports.run = async function ({ api, event }) {
 
- const currentTime = moment.tz("Asia/Dhaka").format("『D/MM/YYYY』 【hh:mm:ss】");
+ const date = moment.tz("Asia/kolkata").format("DD MMMM YYYY");
+ 
+ const time = moment.tz("Asia/kolkata").format("hh:mm A");
+ const day = moment.tz("Asia/kolkata").format("dddd");
 
- const imgLinks = [
- "https://i.imgur.com/EuiRi4v.jpeg",
- "https://i.imgur.com/ZjxQx17.jpeg",
- "https://i.imgur.com/dOO6Af5.jpeg",
- "https://i.imgur.com/WMIngcC.jpeg",
- "https://i.imgur.com/2dJSfXq.jpeg"
- ];
+ const WIDTH = 900;
+ const HEIGHT = 1100;
 
- const imgPath = __dirname + "/cache/time.jpg";
- const imgURL = imgLinks[Math.floor(Math.random() * imgLinks.length)];
+ const canvas = createCanvas(WIDTH, HEIGHT);
+ const ctx = canvas.getContext("2d");
 
- const message = `🌸 𝗔𝘀𝘀𝗮𝗹𝗮𝗺𝘂 𝗔𝗹𝗮𝗶𝗸𝘂𝗺 🌸
+ // Background gradient
+ let gradient = ctx.createRadialGradient(
+   WIDTH/2, HEIGHT/2, 100,
+   WIDTH/2, HEIGHT/2, 600
+ );
+ gradient.addColorStop(0, "#001010");
+ gradient.addColorStop(1, "#000000");
+ ctx.fillStyle = gradient;
+ ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
-✨ 𝗕𝗼𝘁 𝗣𝗥𝗘𝗙𝗜𝗫: ${global.config.PREFIX}
+ // Outer neon glow frame
+ ctx.shadowColor = "#00FFE5";
+ ctx.shadowBlur = 40;
+ ctx.lineWidth = 15;
+ ctx.strokeStyle = "#00FFE5";
+ ctx.strokeRect(40, 40, WIDTH - 80, HEIGHT - 80);
 
-📆 𝗖𝘂𝗿𝗿𝗲𝗻𝘁 𝗧𝗶𝗺𝗲: ${currentTime}
+ ctx.shadowBlur = 0;
 
-⏱️ 𝗕𝗼𝘁 𝗨𝗽𝘁𝗶𝗺𝗲: ${hours} hour(s), ${minutes} minute(s), ${seconds} second(s)
+ // TIME
+ ctx.font = "110px Arial Black";
+ ctx.fillStyle = "#FFFFFF";
+ ctx.textAlign = "center";
+ ctx.fillText(time, WIDTH / 2, 220);
 
-💠𝗕𝗢𝗧 𝗔𝗗𝗠𝗜𝗡 𝗦𝗔𝗛𝗔𝗗𝗔𝗧~𝗦𝗔𝗛𝗨💠
+ // DAY
+ ctx.font = "80px Arial Black";
+ ctx.fillStyle = "#FF33F7";
+ ctx.fillText(day.toUpperCase(), WIDTH / 2, 330);
 
+ // DATE
+ ctx.font = "45px Arial";
+ ctx.fillStyle = "#CFCFCF";
+ ctx.fillText(date, WIDTH / 2, 400);
 
-¶────██████────¶
-¶────██████────¶
-¶────██████────¶
-¶────██████────¶
-¶────██████────¶
-¶────██████────¶
-¶────██████────¶
-¶────██████────¶
-¶────██████────¶
-¶────██████────¶
-¶─◥██████████◤─¶
-¶──◥████████◤──¶
-¶────◥████◤────¶
-¶─────◥██◤─────¶
+ // Calendar
+ ctx.font = "38px Arial";
+ const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+ ctx.fillStyle = "#00FFC8";
+ let x = 120;
+ let y = 500;
 
-🌟 ─꯭─⃝‌‌𝐒𝐡𝐚𝐡𝐚𝐝𝐚𝐭 𝐂𝐡𝐚𝐭 𝐁𝐨𝐭 🌟`;
+ days.forEach(d => {
+   ctx.fillText(d, x, y);
+   x += 110;
+ });
 
- const callback = () => {
- api.sendMessage({
- body: message,
- attachment: fs.createReadStream(imgPath)
- }, event.threadID, () => fs.unlinkSync(imgPath));
- };
+ // Dates
+ let firstDay = moment().startOf("month").day();
+ let totalDays = moment().daysInMonth();
 
- request(encodeURI(imgURL)).pipe(fs.createWriteStream(imgPath)).on("close", callback);
+ x = 120;
+ y = 570;
+ for (let i = 0; i < firstDay; i++) x += 110;
+
+ for (let d = 1; d <= totalDays; d++) {
+   if (d === moment().date()) {
+     // Highlight circle
+     ctx.beginPath();
+     ctx.arc(x, y - 30, 42, 0, Math.PI * 2);
+     ctx.fillStyle = "#FFF200";
+     ctx.fill();
+
+     ctx.font = "45px Arial Black";
+     ctx.fillStyle = "#000";
+     ctx.fillText(d, x, y - 15);
+   } else {
+     ctx.font = "42px Arial";
+     ctx.fillStyle = "#D0D0D0";
+     ctx.fillText(d, x, y - 15);
+   }
+
+   x += 110;
+   if (x > 800) {
+     x = 120;
+     y += 100;
+   }
+ }
+
+ 
+ ctx.font = "40px Arial Black";
+ ctx.fillStyle = "#00FFE5";
+ ctx.shadowColor = "#00FFE5";
+ ctx.shadowBlur = 25;
+ ctx.fillText("Habib Bot", WIDTH / 2, HEIGHT - 70);
+
+ ctx.shadowBlur = 0;
+
+ // Save
+ const output = __dirname + "/cache/rahat_time.jpg";
+ fs.writeFileSync(output, canvas.toBuffer("image/jpeg"));
+
+ // Send image + current date & time
+ api.sendMessage(
+   { 
+     body: `⏱️ সময় ${time} \n🗓️ তারিখ ${date} `,
+     attachment: fs.createReadStream(output) 
+   },
+   event.threadID,
+   () => fs.unlinkSync(output)
+ );
 };
