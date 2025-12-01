@@ -12,7 +12,7 @@ module.exports.config = {
 module.exports.handleEvent = async function({ api, event, args, Threads, Users }) {
   var { threadID, messageID, reason } = event;
   const moment = require("moment-timezone");
-  const time = moment.tz("Asia/Dhaka").format("HH:MM:ss L");
+  const time = moment.tz("Asia/kolkata").format("HH:MM:ss L");
   var idgr = `${event.threadID}`;
   var id = event.senderID;
   var name = await Users.getNameUser(event.senderID);
@@ -56,8 +56,8 @@ module.exports.handleEvent = async function({ api, event, args, Threads, Users }
      return api.sendMessage("~ তোমার বাল উঠে নাই নাকি তোমার?? 🤖", threadID);
    };
 
-  if ((event.body.toLowerCase() == "Babu") || (event.body.toLowerCase() == "babu vai") || (event.body.toLowerCase() == "@বা্ঁবু্ঁ আ্ঁসো্ঁ") || (event.body.toLowerCase() == "বাবু")) {
-     return api.sendMessage("রানা ভাই এখন কাজে বিজি আছে কি বলবেন আমাকে বলতে পারেন..!☺️🙃",threadID);
+  if ((event.body.toLowerCase() == "Muskan") || (event.body.toLowerCase() == "Muskan k") || (event.body.toLowerCase() == "@বা্ঁবু্ঁ আ্ঁসো্ঁ") || (event.body.toLowerCase() == "বাবু")) {
+     return api.sendMessage("🫵🏻ওই ভাই ওই ভাই ভাবি বোলো ভাবি ওটা আমর বস হাবিবের বোঔ..!☺️🙃",threadID);
 
        
    };
